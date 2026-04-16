@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Grad Times</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IM+Fell+English:ital@0;1&family=UnifrakturMaguntia&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- Setup -->
+<div id="setup">
+  <div class="sbox">
+    <div class="s-rule"></div><div class="s-rule2"></div>
+    <div class="s-gazette">The Grad Times</div>
+    <div class="s-sub">Employment Gazette</div>
+    <div class="s-rule3"></div><div class="s-rule4"></div>
+    <div class="s-notice">To access the Employment Notices,<br>kindly present your correspondent's credentials.</div>
+    <input class="sinp" type="password" id="api-key" placeholder="Anthropic API Key &middot; sk-ant-...">
+    <button class="sbtn" onclick="saveKey()">Submit Credentials</button>
+    <div class="snote">Stored locally in your browser &middot; console.anthropic.com</div>
+  </div>
+</div>
+
+<!-- Masthead -->
+<header class="masthead">
+  <div class="mast-band">
+    <div class="mast-left">
+      <div class="mast-side-text">
+        <span id="mast-date">Wednesday, 15th April 1926</span><br>
+        <em>London, England &middot; Morning Edition</em>
+      </div>
+    </div>
+    <div class="mast-title">The Grad Times</div>
+    <div class="mast-right">
+      <div class="mast-side-text" style="text-align:right">
+        Employment Gazette<br>
+        <em>&ldquo;All Visa Statuses Welcome&rdquo;</em>
+      </div>
+    </div>
+  </div>
+  <div class="mast-nav">
+    <span>Positions Vacant</span>
+    <span class="mast-sep">&#10022;</span>
+    <span>Graduate Appointments</span>
+    <span class="mast-sep">&#10022;</span>
+    <span>Visa Notices</span>
+    <span class="mast-sep">&#10022;</span>
+    <span>Letters of Application</span>
+    <span class="mast-sep">&#10022;</span>
+    <span>Career Dispatches</span>
+  </div>
+</header>
+
+<!-- Page body -->
+<div class="page">
+
+  <!-- Left: Search -->
+  <aside class="lcol">
+    <div class="col-head">Place Inquiry</div>
+
+    <label class="f-label">Sought Position</label>
+    <input class="f-inp" type="text" id="q" placeholder="e.g. Software Engineer&hellip;">
+
+    <label class="f-label">District</label>
+    <input class="f-inp" type="text" id="loc" placeholder="London, Manchester&hellip;">
+
+    <label class="f-label">Trade</label>
+    <select class="f-inp" id="industry">
+      <option value="">All Trades</option>
+      <option>Technology</option>
+      <option>Finance &amp; Banking</option>
+      <option>Consulting</option>
+      <option>Healthcare</option>
+      <option>Engineering</option>
+      <option>Marketing &amp; PR</option>
+      <option>Education</option>
+      <option>Legal</option>
+      <option>Retail &amp; FMCG</option>
+      <option>Media &amp; Creative</option>
+    </select>
+
+    <div class="visa-section">
+      <div class="f-label">Visa Standing</div>
+      <div class="v-rule"></div>
+      <button class="v-btn on" onclick="setVisa('all',this)">All Positions</button>
+      <button class="v-btn" onclick="setVisa('graduate',this)">Graduate Route Eligible</button>
+      <button class="v-btn" onclick="setVisa('skilled',this)">Sponsorship Provided</button>
+    </div>
+
+    <!-- CV Section -->
+    <div class="cv-section">
+      <div class="col-head">Your CV</div>
+      <div id="cv-ui">
+        <div class="cv-upload-zone" id="cv-drop" onclick="document.getElementById('cv-file').click()">
+          Present Your Document
+          <br><span style="font-size:9px;letter-spacing:1px;color:var(--dim)">.pdf &middot; .docx &middot; .txt</span>
+        </div>
+        <input type="file" id="cv-file" accept=".pdf,.docx,.txt" style="display:none" onchange="handleCVUpload(event)">
+      </div>
+    </div>
+
+    <!-- Search buttons -->
+    <div id="search-buttons">
+      <button class="go-btn" id="go-btn" onclick="doSearch()">Despatch Inquiry &rarr;</button>
+    </div>
+
+    <!-- Search history -->
+    <div id="search-history"></div>
+
+    <div class="l-footer">
+      <button class="lf-link" id="saved-btn" onclick="showSavedJobs()">Saved Notices</button>
+      <button class="lf-link" onclick="resetApp()">&#8592; New Inquiry</button>
+      <button class="lf-link" onclick="clearKey()">Change Credentials</button>
+    </div>
+  </aside>
+
+  <!-- Main: Results -->
+  <div class="mcol">
+    <div class="results-area" id="results-area">
+      <div class="init" id="init-state">
+        <div class="init-rule"></div>
+        <div class="init-title">Awaiting Your Inquiry</div>
+        <div class="init-rule"></div>
+        <div class="init-sub">Submit a position to view notices</div>
+      </div>
+    </div>
+
+    <div class="detail-area" id="detail-area">
+      <button class="back-btn" onclick="closeDetail()">&#8592; Return to Notices</button>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Cover Letter Modal -->
+<div class="modal-bg" id="cl-modal" onclick="handleModalBg(event)">
+  <div class="modal" style="position:relative">
+    <button class="mclose" onclick="closeModal()">&#10005;</button>
+    <div class="mh">
+      <div class="mh-kicker">Letter of Application</div>
+      <div class="mh-title">The Grad Times</div>
+    </div>
+    <div class="letter" id="cl-body"></div>
+    <div class="mfoot">
+      <button class="btn-ink" onclick="copyLetter()">Copy Letter</button>
+      <button class="btn-ghost" onclick="printLetter()">Print / PDF</button>
+      <button class="btn-ghost" onclick="downloadLetterDoc()">Download .doc</button>
+      <button class="btn-ghost" onclick="closeModal()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<!-- CV Editor Overlay -->
+<div id="cv-editor">
+  <div class="cve-header">
+    <div class="cve-masthead">The Grad Times</div>
+    <div class="cve-sub">CV Editor</div>
+  </div>
+  <button class="cve-back" onclick="closeCVEditor()">&larr; Return to Gazette</button>
+  <div class="cve-body">
+    <div class="cve-left">
+      <div class="cve-panel-head">Your Record</div>
+      <textarea class="cve-textarea" id="cve-text" placeholder="Your CV text shall appear herein&hellip;"></textarea>
+    </div>
+    <div class="cve-right">
+      <div class="cve-panel-head">Refine by Instruction</div>
+      <input class="cve-instruction" id="cve-instr" type="text" placeholder="e.g. Strengthen the summary, Tailor for fintech&hellip;">
+      <button class="btn-ink" id="cve-improve-btn" onclick="improveCVSection()" style="width:100%">Refine This Passage</button>
+      <div class="cve-result" id="cve-result"></div>
+      <div id="cve-apply-wrap" style="display:none;margin-top:10px">
+        <button class="btn-ink" onclick="applyCVImprovement()" style="width:100%">Commit Amendments</button>
+      </div>
+    </div>
+  </div>
+  <div class="cve-footer">
+    <button class="btn-ink" onclick="saveCVEdits()">Save Changes</button>
+    <button class="btn-ghost" onclick="discardCVEdits()">Abandon Revisions</button>
+  </div>
+</div>
+
+<!-- Chat Bubble -->
+<div id="chat-bubble" onclick="toggleChat()">
+  <img src="/img/chat-bubble.svg" id="chat-bubble-icon" alt="Chat">
+</div>
+<div id="chat-panel">
+  <div class="chat-header">
+    <img src="/img/chat-icon.png" class="chat-avatar">
+    <span class="chat-title">Grad Times President</span>
+    <button class="chat-close" onclick="toggleChat()">&times;</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-area">
+    <input id="chat-input" type="text" placeholder="Describe what you're looking for...">
+    <button class="chat-send" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- CDN: PDF.js & Mammoth.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+<!-- App JS (order matters) -->
+<script src="/js/state.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/cv.js"></script>
+<script src="/js/search.js"></script>
+<script src="/js/detail.js"></script>
+<script src="/js/chat.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
